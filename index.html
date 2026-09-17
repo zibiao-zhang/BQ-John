@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Bible Quizzing -- John </title>
+  <title>John Bible Quizzing</title>
 
   <style>
     :root {
@@ -375,9 +375,7 @@
       </div>
     </header>
 
-    <!-- =========================
-         SETUP SCREEN
-    ========================== -->
+    <!-- SETUP SCREEN -->
     <section id="setupScreen" class="card">
       <h2>Practice Setup</h2>
 
@@ -442,14 +440,11 @@
 
       <div class="status-box">
         Practice questions are randomly selected from the chosen reference range
-        and selected question types. The export includes all matching questions,
-        not only the random practice questions.
+        and selected question types. CSV export includes all matching questions.
       </div>
     </section>
 
-    <!-- =========================
-         QUIZ SCREEN
-    ========================== -->
+    <!-- QUIZ SCREEN -->
     <section id="quizScreen" class="card hidden">
 
       <div class="question-meta">
@@ -513,14 +508,11 @@
       </button>
 
       <button id="resetButton" class="gray-button">
-	    Reset Practice
-	  </button>
-
+        Reset Practice
+      </button>
     </section>
 
-    <!-- =========================
-         RESULT SCREEN
-    ========================== -->
+    <!-- RESULT SCREEN -->
     <section id="resultScreen" class="card hidden">
       <h2>Practice Complete</h2>
 
@@ -537,9 +529,7 @@
 
   </main>
 
-  <!-- =========================
-       QUESTION BANK FILES
-  ========================== -->
+  <!-- QUESTION BANK FILES -->
 
   <script src="questions-01.js"></script>
   <script src="questions-02.js"></script>
@@ -564,12 +554,6 @@
   <script src="questions-21.js"></script>
 
   <script>
-    /*
-      ==========================================
-      QUESTION TYPE NAMES
-      ==========================================
-    */
-
     const TYPE_NAMES = {
       INT: "Interrogative Question",
       MA: "Multiple Answer",
@@ -585,12 +569,6 @@
       CRMA: "Chapter Reference, Multiple Answer",
       CVRMA: "Chapter-and-Verse Reference, Multiple Answer"
     };
-
-    /*
-      ==========================================
-      JOHN CHAPTER VERSE COUNTS
-      ==========================================
-    */
 
     const CHAPTER_VERSES = {
       1: 51,
@@ -616,33 +594,31 @@
       21: 25
     };
 
-    /*
-      ==========================================
-      QUESTION BANK
-      ==========================================
-    */
-
     const QUESTION_BANK =
       Array.isArray(window.QUESTION_BANK)
         ? window.QUESTION_BANK
         : [];
 
-    /*
-      ==========================================
-      APPLICATION STATE
-      ==========================================
-    */
+    const QUESTION_TYPE_ORDER = [
+      "INT",
+      "MA",
+      "Q",
+      "FTV",
+      "CR",
+      "CVR",
+      "SIT",
+      "F2V",
+      "Q2V",
+      "FT",
+      "FTN",
+      "CRMA",
+      "CVRMA"
+    ];
 
     let selectedQuestions = [];
     let currentIndex = 0;
     let knownCount = 0;
     let reviewCount = 0;
-
-    /*
-      ==========================================
-      DOM ELEMENTS
-      ==========================================
-    */
 
     const setupScreen =
       document.getElementById("setupScreen");
@@ -713,28 +689,6 @@
     const resultMessage =
       document.getElementById("resultMessage");
 
-    /*
-      ==========================================
-      SELECTED QUESTION TYPES
-      ==========================================
-    */
-
-    const QUESTION_TYPE_ORDER = [
-      "INT",
-      "MA",
-      "Q",
-      "FTV",
-      "CR",
-      "CVR",
-      "SIT",
-      "F2V",
-      "Q2V",
-      "FT",
-      "FTN",
-      "CRMA",
-      "CVRMA"
-    ];
-
     function getAvailableQuestionTypes() {
       const bankTypes = QUESTION_BANK
         .map(question => question.type)
@@ -750,18 +704,11 @@
     function renderTypeCheckboxes() {
       typeGrid.innerHTML = "";
 
-      const types =
-        getAvailableQuestionTypes();
-
-      types.forEach(type => {
-        const label =
-          document.createElement("label");
-
+      getAvailableQuestionTypes().forEach(type => {
+        const label = document.createElement("label");
         label.className = "type-option";
 
-        const checkbox =
-          document.createElement("input");
-
+        const checkbox = document.createElement("input");
         checkbox.type = "checkbox";
         checkbox.name = "questionType";
         checkbox.value = type;
@@ -772,17 +719,12 @@
           updateRangeInfo
         );
 
-        const code =
-          document.createElement("span");
-
+        const code = document.createElement("span");
         code.className = "type-code";
         code.textContent = type;
 
-        const name =
-          document.createElement("span");
-
-        name.textContent =
-          TYPE_NAMES[type] || type;
+        const name = document.createElement("span");
+        name.textContent = TYPE_NAMES[type] || type;
 
         label.appendChild(checkbox);
         label.appendChild(code);
@@ -818,12 +760,6 @@
       updateRangeInfo();
     }
 
-    /*
-      ==========================================
-      REFERENCE HELPERS
-      ==========================================
-    */
-
     function makeReference(chapter, verse) {
       return {
         chapter: Number(chapter),
@@ -856,22 +792,14 @@
       );
     }
 
-    /*
-      ==========================================
-      CHAPTER AND VERSE DROPDOWNS
-      ==========================================
-    */
-
     function populateChapterSelect(selectElement) {
       selectElement.innerHTML = "";
 
       for (let chapter = 1; chapter <= 21; chapter++) {
-        const option =
-          document.createElement("option");
+        const option = document.createElement("option");
 
         option.value = chapter;
-        option.textContent =
-          `John ${chapter}`;
+        option.textContent = "John " + chapter;
 
         selectElement.appendChild(option);
       }
@@ -892,19 +820,16 @@
         verse <= totalVerses;
         verse++
       ) {
-        const option =
-          document.createElement("option");
+        const option = document.createElement("option");
 
         option.value = verse;
-        option.textContent =
-          `Verse ${verse}`;
+        option.textContent = "Verse " + verse;
 
         selectElement.appendChild(option);
       }
 
       if (selectedVerse <= totalVerses) {
-        selectElement.value =
-          selectedVerse;
+        selectElement.value = selectedVerse;
       }
     }
 
@@ -915,34 +840,14 @@
       startChapter.value = "1";
       endChapter.value = "21";
 
-      populateVerseSelect(
-        startVerse,
-        1,
-        1
-      );
-
-      populateVerseSelect(
-        endVerse,
-        21,
-        25
-      );
+      populateVerseSelect(startVerse, 1, 1);
+      populateVerseSelect(endVerse, 21, 25);
     }
 
-    /*
-      ==========================================
-      FILTER QUESTIONS BY RANGE AND TYPE
-      ==========================================
-    */
-
     function getFilteredQuestions() {
-      const start =
-        getStartReference();
-
-      const end =
-        getEndReference();
-
-      const selectedTypes =
-        getSelectedTypes();
+      const start = getStartReference();
+      const end = getEndReference();
+      const selectedTypes = getSelectedTypes();
 
       if (
         referencePosition(start) >
@@ -959,10 +864,8 @@
           referencePosition(questionReference);
 
         const inRange =
-          questionPosition >=
-            referencePosition(start) &&
-          questionPosition <=
-            referencePosition(end);
+          questionPosition >= referencePosition(start) &&
+          questionPosition <= referencePosition(end);
 
         const typeSelected =
           selectedTypes.includes(question.type);
@@ -972,14 +875,9 @@
     }
 
     function updateRangeInfo() {
-      const start =
-        getStartReference();
-
-      const end =
-        getEndReference();
-
-      const selectedTypes =
-        getSelectedTypes();
+      const start = getStartReference();
+      const end = getEndReference();
+      const selectedTypes = getSelectedTypes();
 
       if (
         referencePosition(start) >
@@ -994,8 +892,10 @@
 
       if (selectedTypes.length === 0) {
         rangePreview.textContent =
-          `Practice range: John ${start.chapter}:${start.verse} - ` +
-          `John ${end.chapter}:${end.verse}`;
+          "Practice range: John " +
+          start.chapter + ":" + start.verse +
+          " - John " +
+          end.chapter + ":" + end.verse;
 
         availableCount.textContent =
           "Please select at least one question type.";
@@ -1007,8 +907,10 @@
         getFilteredQuestions().length;
 
       rangePreview.textContent =
-        `Practice range: John ${start.chapter}:${start.verse} - ` +
-        `John ${end.chapter}:${end.verse}`;
+        "Practice range: John " +
+        start.chapter + ":" + start.verse +
+        " - John " +
+        end.chapter + ":" + end.verse;
 
       const requested =
         questionCount.value === "all"
@@ -1016,16 +918,13 @@
           : questionCount.value;
 
       availableCount.textContent =
-        `${available} question(s) available. ` +
-        `Selected amount: ${requested}. ` +
-        `Selected types: ${selectedTypes.length}.`;
+        available +
+        " question(s) available. Selected amount: " +
+        requested +
+        ". Selected types: " +
+        selectedTypes.length +
+        ".";
     }
-
-    /*
-      ==========================================
-      RANDOMIZATION
-      ==========================================
-    */
 
     function shuffle(array) {
       const copied = [...array];
@@ -1051,12 +950,6 @@
 
       return copied;
     }
-
-    /*
-      ==========================================
-      SPEECH
-      ==========================================
-    */
 
     function speechSupported() {
       return "speechSynthesis" in window;
@@ -1095,14 +988,10 @@
         TYPE_NAMES[question.type] ||
         question.type;
 
-      return `${typeName}. ${question.question}`;
+      return typeName +
+        ". " +
+        question.question;
     }
-
-    /*
-      ==========================================
-      RENDER QUESTION
-      ==========================================
-    */
 
     function renderQuestion() {
       const question =
@@ -1118,26 +1007,33 @@
         question.type;
 
       questionNumber.textContent =
-        `Question ${currentIndex + 1} of ` +
-        `${selectedQuestions.length}`;
+        "Question " +
+        (currentIndex + 1) +
+        " of " +
+        selectedQuestions.length;
 
       correctCount.textContent =
-        `Correct: ${knownCount}`;
+        "Correct: " + knownCount;
 
       questionType.textContent =
-        `Type: ${question.type} - ${typeName}`;
+        "Type: " +
+        question.type +
+        " - " +
+        typeName;
 
       questionText.textContent =
         question.question;
 
       questionReference.textContent =
-        `Reference: ${question.reference}`;
+        "Reference: " +
+        question.reference;
 
       answerText.textContent =
         question.answer;
 
       answerReference.textContent =
-        `Reference: ${question.reference}`;
+        "Reference: " +
+        question.reference;
 
       answerArea.classList.add("hidden");
 
@@ -1147,7 +1043,7 @@
         100;
 
       progressBar.style.width =
-        `${progress}%`;
+        progress + "%";
 
       window.setTimeout(() => {
         speak(
@@ -1156,20 +1052,14 @@
       }, 300);
     }
 
-    /*
-      ==========================================
-      START PRACTICE
-      ==========================================
-    */
-
     function startPractice() {
       setupError.classList.add("hidden");
       setupError.textContent = "";
 
-      const available =
-        getFilteredQuestions();
+      const selectedTypes =
+        getSelectedTypes();
 
-      if (getSelectedTypes().length === 0) {
+      if (selectedTypes.length === 0) {
         setupError.textContent =
           "Please select at least one question type.";
 
@@ -1177,9 +1067,12 @@
         return;
       }
 
+      const available =
+        getFilteredQuestions();
+
       if (available.length === 0) {
         setupError.textContent =
-          "There are no questions matching this range and question type selection.";
+          "There are no questions matching this range and type selection.";
 
         setupError.classList.remove("hidden");
         return;
@@ -1207,21 +1100,42 @@
       renderQuestion();
     }
 
-    /*
-      ==========================================
-      CSV EXPORT
-      ==========================================
-    */
+    function resetPractice() {
+      stopSpeaking();
+
+      selectedQuestions = [];
+      currentIndex = 0;
+      knownCount = 0;
+      reviewCount = 0;
+
+      correctCount.textContent =
+        "Correct: 0";
+
+      progressBar.style.width =
+        "0%";
+
+      setupError.classList.add("hidden");
+      setupError.textContent = "";
+
+      quizScreen.classList.add("hidden");
+      resultScreen.classList.add("hidden");
+      setupScreen.classList.remove("hidden");
+
+      updateRangeInfo();
+    }
 
     function escapeCsv(value) {
-      const text =
-        String(value ?? "");
+      const text = String(value ?? "");
 
-      return `"${text.replace(/"/g, '""')}"`;
+      return '"' +
+        text.replace(/"/g, '""') +
+        '"';
     }
 
     function buildCsv(questions) {
-      const headers = [
+      const rows = [];
+
+      rows.push([
         "ID",
         "Type",
         "Type Name",
@@ -1231,9 +1145,7 @@
         "Level",
         "Question",
         "Answer"
-      ];
-
-      const rows = [headers];
+      ]);
 
       questions.forEach(question => {
         rows.push([
@@ -1255,16 +1167,19 @@
     }
 
     function downloadCsv() {
-      const questions =
-        getFilteredQuestions();
+      const selectedTypes =
+        getSelectedTypes();
 
-      if (getSelectedTypes().length === 0) {
+      if (selectedTypes.length === 0) {
         setupError.textContent =
           "Please select at least one question type before exporting.";
 
         setupError.classList.remove("hidden");
         return;
       }
+
+      const questions =
+        getFilteredQuestions();
 
       if (questions.length === 0) {
         setupError.textContent =
@@ -1276,11 +1191,6 @@
 
       const csv =
         buildCsv(questions);
-
-      /*
-        UTF-8 BOM helps Excel correctly display
-        non-English or special characters.
-      */
 
       const blob =
         new Blob(
@@ -1305,8 +1215,12 @@
       link.href = url;
 
       link.download =
-        `John_questions_${start.chapter}_${start.verse}_to_` +
-        `${end.chapter}_${end.verse}.csv`;
+        "John_questions_" +
+        start.chapter + "_" +
+        start.verse + "_to_" +
+        end.chapter + "_" +
+        end.verse +
+        ".csv";
 
       document.body.appendChild(link);
       link.click();
@@ -1314,32 +1228,6 @@
 
       URL.revokeObjectURL(url);
     }
-
-    /*
-      ==========================================
-      MOVE TO NEXT QUESTION
-      ==========================================
-    */
-    function resetPractice() {
-	  stopSpeaking();
-
-	  selectedQuestions = [];
-	  currentIndex = 0;
-	  knownCount = 0;
-	  reviewCount = 0;
-
-	  quizScreen.classList.add("hidden");
-	  resultScreen.classList.add("hidden");
-	  setupScreen.classList.remove("hidden");
-
-	  correctCount.textContent = "Correct: 0";
-	  progressBar.style.width = "0%";
-
-	  setupError.classList.add("hidden");
-	  setupError.textContent = "";
-
-	  updateRangeInfo();
-}
 
     function moveToNextQuestion() {
       stopSpeaking();
@@ -1357,12 +1245,6 @@
       renderQuestion();
     }
 
-    /*
-      ==========================================
-      MARK QUESTION
-      ==========================================
-    */
-
     function finishQuestion(result) {
       if (result === "known") {
         knownCount++;
@@ -1373,16 +1255,10 @@
       }
 
       correctCount.textContent =
-        `Correct: ${knownCount}`;
+        "Correct: " + knownCount;
 
       moveToNextQuestion();
     }
-
-    /*
-      ==========================================
-      FINISH PRACTICE
-      ==========================================
-    */
 
     function finishPractice() {
       stopSpeaking();
@@ -1406,19 +1282,19 @@
             );
 
       scoreText.textContent =
-        `${knownCount} / ${total}`;
+        knownCount + " / " + total;
 
       resultMessage.innerHTML =
-        `Score: <strong>${percentage}%</strong><br>` +
-        `Need Review: <strong>${reviewCount}</strong><br>` +
-        `Skipped: <strong>${skipped}</strong>`;
+        "Score: <strong>" +
+        percentage +
+        "%</strong><br>" +
+        "Need Review: <strong>" +
+        reviewCount +
+        "</strong><br>" +
+        "Skipped: <strong>" +
+        skipped +
+        "</strong>";
     }
-
-    /*
-      ==========================================
-      EVENT LISTENERS
-      ==========================================
-    */
 
     startChapter.addEventListener(
       "change",
@@ -1575,25 +1451,19 @@
         moveToNextQuestion
       );
 
-      document
-	    .getElementById("resetButton")
-	    .addEventListener(
-	      "click",
-	      resetPractice
-  );
+    document
+      .getElementById("resetButton")
+      .addEventListener(
+        "click",
+        resetPractice
+      );
 
     document
-	  .getElementById("restartButton")
-	  .addEventListener(
-	    "click",
-	    resetPractice
-  );
-
-    /*
-      ==========================================
-      INITIALIZE
-      ==========================================
-    */
+      .getElementById("restartButton")
+      .addEventListener(
+        "click",
+        resetPractice
+      );
 
     renderTypeCheckboxes();
     initializeSelectors();
