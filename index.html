@@ -1,26 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>John Bible Quizzing Practice</title>
+  <title>John Bible Quizzing</title>
 
   <style>
     :root {
       --blue: #2457a6;
       --blue-dark: #173d78;
       --light-blue: #eef4ff;
-
       --green: #16834b;
       --light-green: #effcf5;
-
       --red: #b42318;
       --light-red: #fff1f0;
-
       --gray: #667085;
       --dark: #17202a;
       --border: #d0d5dd;
@@ -41,7 +35,7 @@
 
     .app {
       width: 100%;
-      max-width: 820px;
+      max-width: 900px;
       margin: 0 auto;
       padding: 20px;
     }
@@ -197,6 +191,57 @@
       line-height: 1.5;
     }
 
+    .type-tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .type-tools button {
+      width: auto;
+      min-height: 36px;
+      margin-top: 0;
+      padding: 7px 12px;
+      font-size: 13px;
+    }
+
+    .type-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .type-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 42px;
+      padding: 9px 10px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: #ffffff;
+      cursor: pointer;
+      font-weight: normal;
+      margin: 0;
+    }
+
+    .type-option:hover {
+      background: var(--light-blue);
+    }
+
+    .type-option input {
+      width: 17px;
+      height: 17px;
+      accent-color: var(--blue);
+    }
+
+    .type-code {
+      color: var(--blue);
+      font-weight: bold;
+    }
+
     .question-meta {
       display: flex;
       justify-content: space-between;
@@ -279,10 +324,10 @@
       text-align: center;
     }
 
-    .loading {
-      color: var(--gray);
-      text-align: center;
-      font-size: 15px;
+    @media (max-width: 680px) {
+      .type-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
     }
 
     @media (max-width: 580px) {
@@ -312,7 +357,8 @@
       }
 
       .reference-grid,
-      .button-row {
+      .button-row,
+      .type-grid {
         grid-template-columns: 1fr;
       }
     }
@@ -325,7 +371,7 @@
     <header>
       <h1>John Bible Quizzing</h1>
       <div class="subtitle">
-        NIV Review Questions • John 1–21
+        NIV Review Questions - John 1 to 21
       </div>
     </header>
 
@@ -348,6 +394,20 @@
         <select id="endChapter" aria-label="End chapter"></select>
         <select id="endVerse" aria-label="End verse"></select>
       </div>
+
+      <label>Question Types</label>
+
+      <div class="type-tools">
+        <button id="selectAllTypes" class="gray-button">
+          Select All
+        </button>
+
+        <button id="clearAllTypes" class="gray-button">
+          Clear All
+        </button>
+      </div>
+
+      <div id="typeGrid" class="type-grid"></div>
 
       <label for="questionCount">
         Number of Questions
@@ -372,13 +432,18 @@
         Start Practice
       </button>
 
+      <button id="exportButton" class="secondary">
+        Export Selected Questions to CSV
+      </button>
+
       <div id="availableCount" class="small-note"></div>
 
       <div id="setupError" class="error-box hidden"></div>
 
       <div class="status-box">
-        Questions are selected randomly from the selected reference range.
-        The question type will be displayed and read aloud before each question.
+        Practice questions are randomly selected from the chosen reference range
+        and selected question types. The export includes all matching questions,
+        not only the random practice questions.
       </div>
     </section>
 
@@ -411,11 +476,11 @@
 
       <div class="button-row">
         <button id="readQuestionButton" class="secondary">
-          ?? Read Question
+          Read Question
         </button>
 
         <button id="pauseButton" class="secondary">
-          ? Pause
+          Pause
         </button>
       </div>
 
@@ -429,7 +494,7 @@
         <div id="answerReference" class="reference"></div>
 
         <button id="readAnswerButton" class="secondary">
-          ?? Read Answer
+          Read Answer
         </button>
 
         <div class="button-row">
@@ -443,7 +508,6 @@
         </div>
       </div>
 
-      <!-- This button can be used immediately after the child answers -->
       <button id="nextButton" class="primary">
         Next Question
       </button>
@@ -470,11 +534,8 @@
 
   <!-- =========================
        QUESTION BANK FILES
-  ==========================
+  ========================== -->
 
-       Keep questions-01.js in the
-       same folder as this file.
-  -->
   <script src="questions-01.js"></script>
   <script src="questions-02.js"></script>
   <script src="questions-03.js"></script>
@@ -496,12 +557,6 @@
   <script src="questions-19.js"></script>
   <script src="questions-20.js"></script>
   <script src="questions-21.js"></script>
-
-
-
-
-  <!-- Add these later when the files are created:
-  -->
 
   <script>
     /*
@@ -528,7 +583,7 @@
 
     /*
       ==========================================
-      NUMBER OF VERSES IN EACH CHAPTER OF JOHN
+      JOHN CHAPTER VERSE COUNTS
       ==========================================
     */
 
@@ -558,7 +613,7 @@
 
     /*
       ==========================================
-      QUESTION BANK VALIDATION
+      QUESTION BANK
       ==========================================
     */
 
@@ -604,6 +659,9 @@
 
     const endVerse =
       document.getElementById("endVerse");
+
+    const typeGrid =
+      document.getElementById("typeGrid");
 
     const questionCount =
       document.getElementById("questionCount");
@@ -652,6 +710,111 @@
 
     /*
       ==========================================
+      SELECTED QUESTION TYPES
+      ==========================================
+    */
+
+    const QUESTION_TYPE_ORDER = [
+      "INT",
+      "MA",
+      "Q",
+      "FTV",
+      "CR",
+      "CVR",
+      "SIT",
+      "F2V",
+      "Q2V",
+      "FT",
+      "FTN",
+      "CRMA",
+      "CVRMA"
+    ];
+
+    function getAvailableQuestionTypes() {
+      const bankTypes = QUESTION_BANK
+        .map(question => question.type)
+        .filter(Boolean);
+
+      const uniqueTypes = [...new Set(bankTypes)];
+
+      return QUESTION_TYPE_ORDER.filter(type =>
+        uniqueTypes.includes(type)
+      );
+    }
+
+    function renderTypeCheckboxes() {
+      typeGrid.innerHTML = "";
+
+      const types =
+        getAvailableQuestionTypes();
+
+      types.forEach(type => {
+        const label =
+          document.createElement("label");
+
+        label.className = "type-option";
+
+        const checkbox =
+          document.createElement("input");
+
+        checkbox.type = "checkbox";
+        checkbox.name = "questionType";
+        checkbox.value = type;
+        checkbox.checked = true;
+
+        checkbox.addEventListener(
+          "change",
+          updateRangeInfo
+        );
+
+        const code =
+          document.createElement("span");
+
+        code.className = "type-code";
+        code.textContent = type;
+
+        const name =
+          document.createElement("span");
+
+        name.textContent =
+          TYPE_NAMES[type] || type;
+
+        label.appendChild(checkbox);
+        label.appendChild(code);
+        label.appendChild(name);
+
+        typeGrid.appendChild(label);
+      });
+    }
+
+    function getSelectedTypes() {
+      return [...document.querySelectorAll(
+        'input[name="questionType"]:checked'
+      )].map(input => input.value);
+    }
+
+    function selectAllTypes() {
+      document.querySelectorAll(
+        'input[name="questionType"]'
+      ).forEach(input => {
+        input.checked = true;
+      });
+
+      updateRangeInfo();
+    }
+
+    function clearAllTypes() {
+      document.querySelectorAll(
+        'input[name="questionType"]'
+      ).forEach(input => {
+        input.checked = false;
+      });
+
+      updateRangeInfo();
+    }
+
+    /*
+      ==========================================
       REFERENCE HELPERS
       ==========================================
     */
@@ -690,7 +853,7 @@
 
     /*
       ==========================================
-      POPULATE CHAPTER DROPDOWNS
+      CHAPTER AND VERSE DROPDOWNS
       ==========================================
     */
 
@@ -702,15 +865,12 @@
           document.createElement("option");
 
         option.value = chapter;
-        option.textContent = `John ${chapter}`;
+        option.textContent =
+          `John ${chapter}`;
 
         selectElement.appendChild(option);
       }
     }
-
-    /*
-      Populate verses according to selected chapter
-    */
 
     function populateVerseSelect(
       selectElement,
@@ -722,26 +882,26 @@
       const totalVerses =
         CHAPTER_VERSES[chapter];
 
-      for (let verse = 1; verse <= totalVerses; verse++) {
+      for (
+        let verse = 1;
+        verse <= totalVerses;
+        verse++
+      ) {
         const option =
           document.createElement("option");
 
         option.value = verse;
-        option.textContent = `Verse ${verse}`;
+        option.textContent =
+          `Verse ${verse}`;
 
         selectElement.appendChild(option);
       }
 
       if (selectedVerse <= totalVerses) {
-        selectElement.value = selectedVerse;
+        selectElement.value =
+          selectedVerse;
       }
     }
-
-    /*
-      Initial setup:
-      Start = John 1:1
-      End = John 21:25
-    */
 
     function initializeSelectors() {
       populateChapterSelect(startChapter);
@@ -761,13 +921,11 @@
         21,
         25
       );
-
-      updateRangeInfo();
     }
 
     /*
       ==========================================
-      QUESTION FILTERING
+      FILTER QUESTIONS BY RANGE AND TYPE
       ==========================================
     */
 
@@ -777,6 +935,9 @@
 
       const end =
         getEndReference();
+
+      const selectedTypes =
+        getSelectedTypes();
 
       if (
         referencePosition(start) >
@@ -792,12 +953,16 @@
         const questionPosition =
           referencePosition(questionReference);
 
-        return (
+        const inRange =
           questionPosition >=
             referencePosition(start) &&
           questionPosition <=
-            referencePosition(end)
-        );
+            referencePosition(end);
+
+        const typeSelected =
+          selectedTypes.includes(question.type);
+
+        return inRange && typeSelected;
       });
     }
 
@@ -808,6 +973,9 @@
       const end =
         getEndReference();
 
+      const selectedTypes =
+        getSelectedTypes();
+
       if (
         referencePosition(start) >
         referencePosition(end)
@@ -816,6 +984,16 @@
           "Invalid range: start must come before end.";
 
         availableCount.textContent = "";
+        return;
+      }
+
+      if (selectedTypes.length === 0) {
+        rangePreview.textContent =
+          `Practice range: John ${start.chapter}:${start.verse} - ` +
+          `John ${end.chapter}:${end.verse}`;
+
+        availableCount.textContent =
+          "Please select at least one question type.";
 
         return;
       }
@@ -824,7 +1002,7 @@
         getFilteredQuestions().length;
 
       rangePreview.textContent =
-        `Practice range: John ${start.chapter}:${start.verse} – ` +
+        `Practice range: John ${start.chapter}:${start.verse} - ` +
         `John ${end.chapter}:${end.verse}`;
 
       const requested =
@@ -832,14 +1010,10 @@
           ? "all available"
           : questionCount.value;
 
-      if (available === 0) {
-        availableCount.textContent =
-          "No questions are available in this range.";
-      } else {
-        availableCount.textContent =
-          `${available} question(s) available. ` +
-          `Selected amount: ${requested}.`;
-      }
+      availableCount.textContent =
+        `${available} question(s) available. ` +
+        `Selected amount: ${requested}. ` +
+        `Selected types: ${selectedTypes.length}.`;
     }
 
     /*
@@ -849,8 +1023,7 @@
     */
 
     function shuffle(array) {
-      const copied =
-        [...array];
+      const copied = [...array];
 
       for (
         let index = copied.length - 1;
@@ -858,7 +1031,9 @@
         index--
       ) {
         const randomIndex =
-          Math.floor(Math.random() * (index + 1));
+          Math.floor(
+            Math.random() * (index + 1)
+          );
 
         [
           copied[index],
@@ -874,7 +1049,7 @@
 
     /*
       ==========================================
-      SPEECH FUNCTIONS
+      SPEECH
       ==========================================
     */
 
@@ -920,7 +1095,7 @@
 
     /*
       ==========================================
-      RENDER CURRENT QUESTION
+      RENDER QUESTION
       ==========================================
     */
 
@@ -945,7 +1120,7 @@
         `Correct: ${knownCount}`;
 
       questionType.textContent =
-        `Type: ${question.type} — ${typeName}`;
+        `Type: ${question.type} - ${typeName}`;
 
       questionText.textContent =
         question.question;
@@ -961,10 +1136,6 @@
 
       answerArea.classList.add("hidden");
 
-      /*
-        Progress shows the current position.
-      */
-
       const progress =
         (currentIndex /
           selectedQuestions.length) *
@@ -972,12 +1143,6 @@
 
       progressBar.style.width =
         `${progress}%`;
-
-      /*
-        Automatically speak:
-        1. Question type
-        2. Question
-      */
 
       window.setTimeout(() => {
         speak(
@@ -999,41 +1164,36 @@
       const available =
         getFilteredQuestions();
 
-      if (available.length === 0) {
+      if (getSelectedTypes().length === 0) {
         setupError.textContent =
-          "There are no questions in this reference range.";
+          "Please select at least one question type.";
 
         setupError.classList.remove("hidden");
-
         return;
       }
 
-      let requestedCount;
+      if (available.length === 0) {
+        setupError.textContent =
+          "There are no questions matching this range and question type selection.";
 
-      if (questionCount.value === "all") {
-        requestedCount =
-          available.length;
-      } else {
-        requestedCount =
-          Number(questionCount.value);
+        setupError.classList.remove("hidden");
+        return;
       }
 
+      const requested =
+        questionCount.value === "all"
+          ? available.length
+          : Number(questionCount.value);
+
       const actualCount =
-        Math.min(
-          requestedCount,
-          available.length
-        );
+        Math.min(requested, available.length);
 
       selectedQuestions =
-        shuffle(available)
-          .slice(0, actualCount);
+        shuffle(available).slice(0, actualCount);
 
       currentIndex = 0;
       knownCount = 0;
       reviewCount = 0;
-
-      correctCount.textContent =
-        "Correct: 0";
 
       setupScreen.classList.add("hidden");
       resultScreen.classList.add("hidden");
@@ -1044,7 +1204,115 @@
 
     /*
       ==========================================
-      NEXT QUESTION
+      CSV EXPORT
+      ==========================================
+    */
+
+    function escapeCsv(value) {
+      const text =
+        String(value ?? "");
+
+      return `"${text.replace(/"/g, '""')}"`;
+    }
+
+    function buildCsv(questions) {
+      const headers = [
+        "ID",
+        "Type",
+        "Type Name",
+        "Chapter",
+        "Verse",
+        "Reference",
+        "Level",
+        "Question",
+        "Answer"
+      ];
+
+      const rows = [headers];
+
+      questions.forEach(question => {
+        rows.push([
+          question.id || "",
+          question.type || "",
+          TYPE_NAMES[question.type] || question.type || "",
+          question.chapter || "",
+          question.verse || "",
+          question.reference || "",
+          question.level || "",
+          question.question || "",
+          question.answer || ""
+        ]);
+      });
+
+      return rows
+        .map(row => row.map(escapeCsv).join(","))
+        .join("\r\n");
+    }
+
+    function downloadCsv() {
+      const questions =
+        getFilteredQuestions();
+
+      if (getSelectedTypes().length === 0) {
+        setupError.textContent =
+          "Please select at least one question type before exporting.";
+
+        setupError.classList.remove("hidden");
+        return;
+      }
+
+      if (questions.length === 0) {
+        setupError.textContent =
+          "There are no matching questions to export.";
+
+        setupError.classList.remove("hidden");
+        return;
+      }
+
+      const csv =
+        buildCsv(questions);
+
+      /*
+        UTF-8 BOM helps Excel correctly display
+        non-English or special characters.
+      */
+
+      const blob =
+        new Blob(
+          ["\ufeff" + csv],
+          {
+            type: "text/csv;charset=utf-8;"
+          }
+        );
+
+      const url =
+        URL.createObjectURL(blob);
+
+      const link =
+        document.createElement("a");
+
+      const start =
+        getStartReference();
+
+      const end =
+        getEndReference();
+
+      link.href = url;
+
+      link.download =
+        `John_questions_${start.chapter}_${start.verse}_to_` +
+        `${end.chapter}_${end.verse}.csv`;
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      URL.revokeObjectURL(url);
+    }
+
+    /*
+      ==========================================
+      MOVE TO NEXT QUESTION
       ==========================================
     */
 
@@ -1066,7 +1334,7 @@
 
     /*
       ==========================================
-      MARK QUESTION RESULT
+      MARK QUESTION
       ==========================================
     */
 
@@ -1146,13 +1414,10 @@
         const chapter =
           Number(endChapter.value);
 
-        const lastVerse =
-          CHAPTER_VERSES[chapter];
-
         populateVerseSelect(
           endVerse,
           chapter,
-          lastVerse
+          CHAPTER_VERSES[chapter]
         );
 
         updateRangeInfo();
@@ -1175,10 +1440,31 @@
     );
 
     document
+      .getElementById("selectAllTypes")
+      .addEventListener(
+        "click",
+        selectAllTypes
+      );
+
+    document
+      .getElementById("clearAllTypes")
+      .addEventListener(
+        "click",
+        clearAllTypes
+      );
+
+    document
       .getElementById("startButton")
       .addEventListener(
         "click",
         startPractice
+      );
+
+    document
+      .getElementById("exportButton")
+      .addEventListener(
+        "click",
+        downloadCsv
       );
 
     document
@@ -1194,7 +1480,6 @@
           }
 
           answerArea.classList.remove("hidden");
-
           speak(question.answer);
         }
       );
@@ -1258,12 +1543,6 @@
         }
       );
 
-    /*
-      Next Question:
-      This does not add to Correct
-      or Need Review.
-    */
-
     document
       .getElementById("nextButton")
       .addEventListener(
@@ -1287,18 +1566,20 @@
 
     /*
       ==========================================
-      INITIALIZE APP
+      INITIALIZE
       ==========================================
     */
 
+    renderTypeCheckboxes();
+    initializeSelectors();
+    updateRangeInfo();
+
     if (QUESTION_BANK.length === 0) {
       setupError.textContent =
-        "No question bank was loaded. Make sure questions-01.js is in the same folder as BQ_practice.html.";
+        "No question bank was loaded. Check that all questions-XX.js files are in the same folder.";
 
       setupError.classList.remove("hidden");
     }
-
-    initializeSelectors();
   </script>
 </body>
 </html>
