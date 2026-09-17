@@ -511,6 +511,11 @@
       <button id="nextButton" class="primary">
         Next Question
       </button>
+
+      <button id="resetButton" class="gray-button">
+	    Reset Practice
+	  </button>
+
     </section>
 
     <!-- =========================
@@ -1315,6 +1320,26 @@
       MOVE TO NEXT QUESTION
       ==========================================
     */
+    function resetPractice() {
+	  stopSpeaking();
+
+	  selectedQuestions = [];
+	  currentIndex = 0;
+	  knownCount = 0;
+	  reviewCount = 0;
+
+	  quizScreen.classList.add("hidden");
+	  resultScreen.classList.add("hidden");
+	  setupScreen.classList.remove("hidden");
+
+	  correctCount.textContent = "Correct: 0";
+	  progressBar.style.width = "0%";
+
+	  setupError.classList.add("hidden");
+	  setupError.textContent = "";
+
+	  updateRangeInfo();
+}
 
     function moveToNextQuestion() {
       stopSpeaking();
@@ -1550,19 +1575,19 @@
         moveToNextQuestion
       );
 
+      document
+	    .getElementById("resetButton")
+	    .addEventListener(
+	      "click",
+	      resetPractice
+  );
+
     document
-      .getElementById("restartButton")
-      .addEventListener(
-        "click",
-        () => {
-          stopSpeaking();
-
-          resultScreen.classList.add("hidden");
-          setupScreen.classList.remove("hidden");
-
-          updateRangeInfo();
-        }
-      );
+	  .getElementById("restartButton")
+	  .addEventListener(
+	    "click",
+	    resetPractice
+  );
 
     /*
       ==========================================
