@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>John Bible Quizzing</title>
 
   <style>
@@ -77,21 +76,39 @@
     }
 
     select,
+    textarea,
     button {
       width: 100%;
-      min-height: 46px;
       border-radius: 10px;
       font-size: 16px;
     }
 
     select {
+      min-height: 46px;
       padding: 8px 10px;
-      background: var(--white);
+      background: white;
       color: var(--dark);
       border: 1px solid var(--border);
     }
 
+    textarea {
+      min-height: 110px;
+      margin-top: 6px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      resize: vertical;
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.5;
+    }
+
+    textarea:focus,
+    select:focus {
+      outline: 2px solid var(--blue);
+      border-color: var(--blue);
+    }
+
     button {
+      min-height: 46px;
       border: none;
       cursor: pointer;
       padding: 10px 14px;
@@ -221,7 +238,7 @@
       padding: 9px 10px;
       border: 1px solid var(--border);
       border-radius: 9px;
-      background: #ffffff;
+      background: white;
       cursor: pointer;
       font-weight: normal;
       margin: 0;
@@ -309,6 +326,16 @@
       gap: 10px;
     }
 
+    .answer-result-correct {
+      color: var(--green);
+      font-weight: bold;
+    }
+
+    .answer-result-wrong {
+      color: var(--red);
+      font-weight: bold;
+    }
+
     .score {
       margin: 22px 0;
       color: var(--blue);
@@ -382,15 +409,15 @@
       <label>Start Reference</label>
 
       <div class="reference-grid">
-        <select id="startChapter" aria-label="Start chapter"></select>
-        <select id="startVerse" aria-label="Start verse"></select>
+        <select id="startChapter"></select>
+        <select id="startVerse"></select>
       </div>
 
       <label>End Reference</label>
 
       <div class="reference-grid">
-        <select id="endChapter" aria-label="End chapter"></select>
-        <select id="endVerse" aria-label="End verse"></select>
+        <select id="endChapter"></select>
+        <select id="endVerse"></select>
       </div>
 
       <label>Question Types</label>
@@ -437,11 +464,6 @@
       <div id="availableCount" class="small-note"></div>
 
       <div id="setupError" class="error-box hidden"></div>
-
-      <div class="status-box">
-        Practice questions are randomly selected from the chosen reference range
-        and selected question types. CSV export includes all matching questions.
-      </div>
     </section>
 
     <!-- QUIZ SCREEN -->
@@ -449,9 +471,7 @@
 
       <div class="question-meta">
         <div>
-          <span id="questionNumber">
-            Question 1 of 20
-          </span>
+          <span id="questionNumber"></span>
 
           <span id="correctCount" class="correct-count">
             Correct: 0
@@ -468,6 +488,22 @@
       <div id="questionText" class="question"></div>
 
       <div id="questionReference" class="reference"></div>
+
+      <label for="typedAnswer">
+        Type Your Answer
+      </label>
+
+      <textarea
+        id="typedAnswer"
+        rows="4"
+        placeholder="Type your answer here..."
+      ></textarea>
+
+      <button id="checkAnswerButton" class="secondary">
+        Check Answer
+      </button>
+
+      <div id="typedAnswerResult" class="small-note"></div>
 
       <div class="button-row">
         <button id="readQuestionButton" class="secondary">
@@ -516,9 +552,7 @@
     <section id="resultScreen" class="card hidden">
       <h2>Practice Complete</h2>
 
-      <div id="scoreText" class="score">
-        0 / 0
-      </div>
+      <div id="scoreText" class="score"></div>
 
       <div id="resultMessage" class="result-message"></div>
 
@@ -673,6 +707,15 @@
 
     const progressBar =
       document.getElementById("progressBar");
+
+    const typedAnswer =
+      document.getElementById("typedAnswer");
+
+    const checkAnswerButton =
+      document.getElementById("checkAnswerButton");
+
+    const typedAnswerResult =
+      document.getElementById("typedAnswerResult");
 
     const answerArea =
       document.getElementById("answerArea");
@@ -983,6 +1026,55 @@
       window.speechSynthesis.speak(utterance);
     }
 
+    function normalizeAnswer(text) {
+      return String(text || "")
+        .toLowerCase()
+        .replace(/[.,!?;:()[\]{}]/g, " ")
+        .replace(/[-_]/g, " ")
+        .replace(/["']/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function checkTypedAnswer() {
+      const question =
+        selectedQuestions[currentIndex];
+
+      if (!question) {
+        return;
+      }
+
+      const userAnswer =
+        normalizeAnswer(typedAnswer.value);
+
+      const correctAnswer =
+        normalizeAnswer(question.answer);
+
+      if (!userAnswer) {
+        typedAnswerResult.textContent =
+          "Please type an answer first.";
+
+        typedAnswerResult.className =
+          "small-note answer-result-wrong";
+
+        return;
+      }
+
+      if (userAnswer === correctAnswer) {
+        typedAnswerResult.textContent =
+          "Correct!";
+
+        typedAnswerResult.className =
+          "small-note answer-result-correct";
+      } else {
+        typedAnswerResult.textContent =
+          "Not quite. Try again or show the answer.";
+
+        typedAnswerResult.className =
+          "small-note answer-result-wrong";
+      }
+    }
+
     function spokenQuestionText(question) {
       const typeName =
         TYPE_NAMES[question.type] ||
@@ -1027,6 +1119,11 @@
       questionReference.textContent =
         "Reference: " +
         question.reference;
+
+      typedAnswer.value = "";
+
+      typedAnswerResult.textContent = "";
+      typedAnswerResult.className = "small-note";
 
       answerText.textContent =
         question.answer;
@@ -1113,6 +1210,10 @@
 
       progressBar.style.width =
         "0%";
+
+      typedAnswer.value = "";
+      typedAnswerResult.textContent = "";
+      typedAnswerResult.className = "small-note";
 
       setupError.classList.add("hidden");
       setupError.textContent = "";
@@ -1367,6 +1468,25 @@
         "click",
         downloadCsv
       );
+
+    document
+      .getElementById("checkAnswerButton")
+      .addEventListener(
+        "click",
+        checkTypedAnswer
+      );
+
+    typedAnswer.addEventListener(
+      "keydown",
+      event => {
+        if (
+          event.ctrlKey &&
+          event.key === "Enter"
+        ) {
+          checkTypedAnswer();
+        }
+      }
+    );
 
     document
       .getElementById("showAnswerButton")
